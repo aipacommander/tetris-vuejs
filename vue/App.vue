@@ -1,13 +1,15 @@
 <template>
-  <div>
+  <div id="owaku">
     <h3>vue.js 落ち物パズルゲーム</h3>
     <p>startを押してからキーボードの矢印キーで操作します</p>
-    <input type="button" @click="startFn" value="START" v-if="gameStart == false">
-    <p v-if="gameOver">GAME OVER</p>
     <div v-for="i in 20" class="container" v-if="gameStart">
-      <div v-for="j in 10" class="waku" :style="{ backgroundColor: ['gray', 'green'][yx[i-1][j-1]] }">
-         {{ yx[i-1][j-1] }}
+      <div v-for="j in 10" class="block" :style="{ backgroundColor: ['#aaa', '#00e100'][yx[i-1][j-1]] }">
+         <span class="block-text">{{ yx[i-1][j-1] }}</span>
       </div>
+    </div>
+    <div class="t">
+      <input id="button" type="button" @click="startFn" value="START" v-if="gameStart == false || gameOver">
+      <p v-if="gameOver">GAME OVER</p>
     </div>
   </div>
 </template>
@@ -15,10 +17,31 @@
 <style>
   .container {
     display: flex;
+    justify-content: center;
   }
-  .waku {
+  #owaku {
+    width: 50%;
+    margin: auto;
+  }
+  #button {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-top: 5px;
+    font-size: 24px;
+    width: 100%;
+  }
+  .t {
+    margin-top: 5px;
+    text-align: center;
+  }
+  .block {
     width: 20px;
     height: 20px;
+    border: 1px solid #555;
+  }
+  .block-text {
+    display: none;
   }
 </style>
 
