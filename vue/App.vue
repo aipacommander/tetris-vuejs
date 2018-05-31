@@ -69,7 +69,8 @@ export default {
       gameOver: false,
     }
   },
-  created () {
+  createBlockd () {
+    // よくわからんけど, vueのmethodoをとeventをbind
     document.body.addEventListener('keydown', this.keyDown);
   },
   destroyed () {
@@ -77,10 +78,13 @@ export default {
   },
   methods: {
     keyDown: function(e) {
-      if (e.keyCode == 38) this.keydownFn(true, 0, 0);        //up
-      else if (e.keyCode == 37) this.keydownFn(false, -1, 0); //left
-      else if (e.keyCode == 40) this.keydownFn(false, 0, 1);  //down
-      else if (e.keyCode == 39) this.keydownFn(false, 1, 0);  //right
+      /**
+       * keyが押されたときに処理するコード
+       */
+      if (e.keyCode == 38) this._keyDown(true, 0, 0);        //up
+      else if (e.keyCode == 37) this._keyDown(false, -1, 0); //left
+      else if (e.keyCode == 40) this._keyDown(false, 0, 1);  //down
+      else if (e.keyCode == 39) this._keyDown(false, 1, 0);  //right
     },
     startFn: function() {
       for (var i = 0; i < 20; i++) {
@@ -91,19 +95,27 @@ export default {
       }
       this.gameStart = true;
       this.gameOver = false;
-      this.createFn();
-      this.timerID = setInterval(this.fallFn, 500);
+      this.createBlock();
+      this.timerID = setInterval(this.fall, 500);
     },
-    keydownFn: function(rotate, dx, dy) {
-      if (!this.gameOver && this.checkFn(rotate, dx, dy)) this.drawFn(rotate, dx, dy);
+    _keyDown: function(rotate, dx, dy) {
+      /**
+       * keyが押されたとき、条件をパスしたらブロックを落とす.
+       */
+      if (!this.gameOver && this.check(rotate, dx, dy)) this.draw(rotate, dx, dy);
     },
-    checkFn: function(rotate, dx, dy) {
+    check: function(rotate, dx, dy) {
+      /**
+       *
+       */
       var yx = this.yx.map(v => v.slice());
       var block = this.block.map(v => v.slice());
       this.blockMemo.forEach(v => {
         yx[v[0]][v[1]] = 0;
       });
-      if (rotate) block = block.map(v => [v[1] * -1, v[0]]);
+      if (rotate) {
+        block = block.map(v => [v[1] * -1, v[0]]);
+      }
       var flag = block.every(v => {
         var x = v[0] + this.blockX + dx;
         var y = v[1] + this.blockY + dy;
@@ -111,41 +123,47 @@ export default {
       });
       return flag;
     },
-    drawFn: function(rotate, dx, dy) {
+    draw: function(rotate, dx, dy) {
       this.blockMemo.forEach(v => {
         this.yx[v[0]][v[1]] = 0;
       });
       this.blockMemo = [];
-      if (rotate) this.block = this.block.map(v => [v[1] * -1, v[0]]);
+      if (rotate) {
+        this.block = this.block.map(v => [v[1] * -1, v[0]]);
+      }
       this.blockX += dx;
       this.blockY += dy;
       this.block.forEach(v => {
-        if (this.yx[v[1] + this.blockY][v[0] + this.blockX] != 0) this.gameOver = true;
+        if (this.yx[v[1] + this.blockY][v[0] + this.blockX] != 0) {
+          this.gameOver = true;
+        }
         this.yx[v[1] + this.blockY][v[0] + this.blockX] = 1;
         this.blockMemo.push([v[1] + this.blockY, v[0] + this.blockX]);
       });
-      if (this.gameOver) clearInterval(this.timerID);
+      if (this.gameOver) {
+        clearInterval(this.timerID);
+      }
       this.yx.push();
     },
-    createFn: function() {
+    createBlock: function() {
       this.blockMemo = [];
       this.blockX = 4;
       this.blockY = 1;
       this.block = blocks[Math.floor(Math.random() * 7)].map(v => [v[0], v[1]]);
-      this.drawFn(false, 0, 0);
+      this.draw(false, 0, 0);
     },
-    deleteFn: function() {
+    delete: function() {
       this.yx = this.yx.filter(v => (v.join("") != "1111111111"));
       while (this.yx.length < 20) {
         this.yx.unshift([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
       }
     },
-    fallFn: function() {
-      if (this.checkFn(false, 0, 1)) {
-        this.drawFn(false, 0, 1);
+    fall: function() {
+      if (this.check(false, 0, 1)) {
+        this.draw(false, 0, 1);
       } else {
-        this.deleteFn();
-        this.createFn();
+        this.delete();
+        this.createBlock();
       }
     }
   }
