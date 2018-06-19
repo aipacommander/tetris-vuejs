@@ -4,12 +4,14 @@
     <p>startを押してからキーボードの矢印キーで操作します</p>
     <div v-for="i in 20" class="container" v-if="gameStart">
       <div v-for="j in 10" class="block" :style="{ backgroundColor: ['#aaa', '#00e100'][yx[i-1][j-1]] }">
-         <span class="block-text">{{ yx[i-1][j-1] }}</span>
+         <span class="block-text" :data-value="yx[i-1][j-1]"></span>
       </div>
     </div>
     <div class="t">
-      <input id="button" type="button" @click="startFn" value="START" v-if="gameStart == false || gameOver">
-      <p v-if="gameOver">GAME OVER</p>
+      <div>score: <span id="score">{{ score }}</span></div>
+      <div>point: <span id="point">{{ point }}</span></div>
+      <input id="button" type="button" @click="startGame" value="START" v-if="gameStart == false || gameOver">
+      <p id="game-over" v-if="gameOver">GAME OVER</p>
     </div>
   </div>
 </template>
@@ -41,7 +43,6 @@
     border: 1px solid #555;
   }
   .block-text {
-    display: none;
   }
 </style>
 
@@ -67,26 +68,32 @@ export default {
       timerID: null,
       gameStart: false,
       gameOver: false,
+      score: 0,
+      point: 0
     }
   },
-  createBlockd () {
+  created () {
     // よくわからんけど, vueのmethodoをとeventをbind
-    document.body.addEventListener('keydown', this.keyDown);
+    document.body.addEventListener('keydown', this.eventKeyDown);
   },
   destroyed () {
-    document.body.removeEventListener('keydown', this.keyDown);
+    document.body.removeEventListener('keydown', this.eventKeyDown);
   },
   methods: {
-    keyDown: function(e) {
+    eventKeyDown: function(e) {
       /**
        * keyが押されたときに処理するコード
        */
-      if (e.keyCode == 38) this._keyDown(true, 0, 0);        //up
-      else if (e.keyCode == 37) this._keyDown(false, -1, 0); //left
-      else if (e.keyCode == 40) this._keyDown(false, 0, 1);  //down
-      else if (e.keyCode == 39) this._keyDown(false, 1, 0);  //right
+      if (e.keyCode == 38) this.keyDown(true, 0, 0);        //up
+      else if (e.keyCode == 37) this.keyDown(false, -1, 0); //left
+      else if (e.keyCode == 40) this.keyDown(false, 0, 1);  //down
+      else if (e.keyCode == 39) this.keyDown(false, 1, 0);  //right
+
+      if ([37, 38, 39, 40].indexOf(e.keyCode) > -1) {
+        this.fall();
+      }
     },
-    startFn: function() {
+    startGame: function() {
       for (var i = 0; i < 20; i++) {
         this.yx[i] = [];
         for (var j = 0; j < 10; j++) {
@@ -96,18 +103,15 @@ export default {
       this.gameStart = true;
       this.gameOver = false;
       this.createBlock();
-      this.timerID = setInterval(this.fall, 500);
+      // this.timerID = setInterval(this.fall, 1000);
     },
-    _keyDown: function(rotate, dx, dy) {
+    keyDown: function(rotate, dx, dy) {
       /**
        * keyが押されたとき、条件をパスしたらブロックを落とす.
        */
       if (!this.gameOver && this.check(rotate, dx, dy)) this.draw(rotate, dx, dy);
     },
     check: function(rotate, dx, dy) {
-      /**
-       *
-       */
       var yx = this.yx.map(v => v.slice());
       var block = this.block.map(v => v.slice());
       this.blockMemo.forEach(v => {
@@ -152,17 +156,27 @@ export default {
       this.block = blocks[Math.floor(Math.random() * 7)].map(v => [v[0], v[1]]);
       this.draw(false, 0, 0);
     },
-    delete: function() {
+    score_check: function() {
+      var yx = this.yx.filter(v => (v.join("") == "1111111111"));
+      var point = yx.length * 10;
+      if (point > 0) {
+        this.point = point;
+        this.score += point;
+      }
+    },
+    deleteLines: function() {
       this.yx = this.yx.filter(v => (v.join("") != "1111111111"));
       while (this.yx.length < 20) {
         this.yx.unshift([0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
       }
     },
     fall: function() {
+      this.point = 0
       if (this.check(false, 0, 1)) {
         this.draw(false, 0, 1);
       } else {
-        this.delete();
+        this.score_check();
+        this.deleteLines();
         this.createBlock();
       }
     }
