@@ -2,9 +2,10 @@
   <div id="owaku">
     <h3>vue.js 落ち物パズルゲーム</h3>
     <p>startを押してからキーボードの矢印キーで操作します</p>
+    <div class="hidden block-text" :data-value="yx.join(',')"></div>
     <div v-for="i in 20" class="container" v-if="gameStart">
       <div v-for="j in 10" class="block" :style="{ backgroundColor: ['#aaa', '#00e100'][yx[i-1][j-1]] }">
-         <span class="block-text" :data-value="yx[i-1][j-1]"></span>
+         <span :data-value="yx[i-1][j-1]"></span>
       </div>
     </div>
     <div class="t">
@@ -17,6 +18,12 @@
 </template>
 
 <style>
+  .hidden {
+    display: none;
+  }
+  .center {
+    text-align: center;
+  }
   .container {
     display: flex;
     justify-content: center;
@@ -41,8 +48,6 @@
     width: 20px;
     height: 20px;
     border: 1px solid #555;
-  }
-  .block-text {
   }
 </style>
 
@@ -153,7 +158,8 @@ export default {
       this.blockMemo = [];
       this.blockX = 4;
       this.blockY = 1;
-      this.block = blocks[Math.floor(Math.random() * 7)].map(v => [v[0], v[1]]);
+      // this.block = blocks[Math.floor(Math.random() * 7)].map(v => [v[0], v[1]]);
+      this.block = blocks[0].map(v => [v[0], v[1]]);
       this.draw(false, 0, 0);
     },
     score_check: function() {
