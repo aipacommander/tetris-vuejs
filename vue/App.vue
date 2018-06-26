@@ -62,6 +62,24 @@ var blocks = [
    [[-1, 0], [0, 0], [1, 0], [0, 1]],  // T
 ];
 
+// 値と重みのリスト[[val, weight], [val, weight], ...]
+const ProbabilisticChoice = (list) => {
+  const totalWeight = list.reduce((p, c) => {
+    return { weight: p.weight + c.weight }
+  }).weight
+
+  return {
+    pick () {
+      const r = Math.random() * totalWeight;
+      let s = 0.0;
+      for (const l of list) {
+        s += l.weight
+        if (r < s) { return l.item }
+      }
+    }
+  }
+};
+
 export default {
   data: function() {
     return {
@@ -89,8 +107,8 @@ export default {
       /**
        * keyが押されたときに処理するコード
        */
-      if (e.keyCode == 38) this.keyDown(true, 0, 0);        //up
-      else if (e.keyCode == 37) this.keyDown(false, -1, 0); //left
+      // if (e.keyCode == 38) this.keyDown(true, 0, 0);        //up
+      if (e.keyCode == 37) this.keyDown(false, -1, 0); //left
       else if (e.keyCode == 40) this.keyDown(false, 0, 1);  //down
       else if (e.keyCode == 39) this.keyDown(false, 1, 0);  //right
 
@@ -108,7 +126,7 @@ export default {
       this.gameStart = true;
       this.gameOver = false;
       this.createBlock();
-      // this.timerID = setInterval(this.fall, 1000);
+      this.timerID = setInterval(this.fall, 1000);
     },
     keyDown: function(rotate, dx, dy) {
       /**
@@ -158,13 +176,24 @@ export default {
       this.blockMemo = [];
       this.blockX = 4;
       this.blockY = 1;
-      // this.block = blocks[Math.floor(Math.random() * 7)].map(v => [v[0], v[1]]);
-      this.block = blocks[0].map(v => [v[0], v[1]]);
-      this.draw(false, 0, 0);
+      // jvar indexes = ProbabilisticChoice([
+      // j { item: 0, weight: 0.2 },
+      // j { item: 1, weight: 0.2 },
+      // j { item: 2, weight: 4.5 },
+      // j { item: 3, weight: 4.5 },
+      // j { item: 4, weight: 0.2 },
+      // j { item: 5, weight: 0.2 },
+      // j { item: 6, weight: 0.2 }
+      // j]);
+      this.block = blocks[Math.floor(Math.random() * 7)].map(v => [v[0], v[1]]);
+      // this.block = blocks[indexes.pick()].map(v => [v[0], v[1]]);
+      var b = [false, true];
+      var selected = b[Math.floor(Math.random() * 2)];
+      this.draw(selected, 0, 0);
     },
     score_check: function() {
       var yx = this.yx.filter(v => (v.join("") == "1111111111"));
-      var point = yx.length * 10;
+      var point = yx.length * 1;
       if (point > 0) {
         this.point = point;
         this.score += point;
