@@ -18,3 +18,12 @@ $ npm install --save react react-dom
 $ npm install --save-dev babel-preset-react babel-preset-env parcel-bundler
 $ npm install --save-dev babel-preset-env parcel-bundler babel-preset-vue vue
 ```
+
+
+## Usage
+
+```sh
+$ docker build -t vue_app_image .
+$ docker run --rm -v $(pwd):/app -p 9000:9000 --name vue_app -it vue_app_image
+```
+
